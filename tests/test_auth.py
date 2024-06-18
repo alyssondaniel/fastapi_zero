@@ -3,8 +3,8 @@ from http import HTTPStatus
 from freezegun import freeze_time
 
 
-def test_get_token(client, user):
-    response = client.post(
+def test_get_token(clientHttp, user):
+    response = clientHttp.post(
         '/auth/token',
         data={'username': user.email, 'password': user.clean_password},
     )
@@ -15,8 +15,8 @@ def test_get_token(client, user):
     assert 'token_type' in token
 
 
-def test_get_token_user_not_found(client, user):
-    response = client.post(
+def test_get_token_user_not_found(clientHttp, user):
+    response = clientHttp.post(
         '/auth/token',
         data={
             'username': 'not_found@example.com',
@@ -28,8 +28,8 @@ def test_get_token_user_not_found(client, user):
     assert response.json() == {'detail': 'Incorrect email or password'}
 
 
-def test_get_token_incorrect_password(client, user):
-    response = client.post(
+def test_get_token_incorrect_password(clientHttp, user):
+    response = clientHttp.post(
         '/auth/token',
         data={'username': user.email, 'password': 'wrong_password'},
     )
@@ -38,9 +38,9 @@ def test_get_token_incorrect_password(client, user):
     assert response.json() == {'detail': 'Incorrect email or password'}
 
 
-def test_token_expired_after_time(client, user):
+def test_token_expired_after_time(clientHttp, user):
     with freeze_time('2023-07-14 12:00:00'):
-        response = client.post(
+        response = clientHttp.post(
             '/auth/token',
             data={'username': user.email, 'password': user.clean_password},
         )
@@ -48,7 +48,7 @@ def test_token_expired_after_time(client, user):
         token = response.json()['access_token']
 
     with freeze_time('2023-07-14 12:31:00'):
-        response = client.put(
+        response = clientHttp.put(
             f'/users/{user.id}',
             headers={'Authorization': f'Bearer {token}'},
             json={
@@ -61,8 +61,8 @@ def test_token_expired_after_time(client, user):
         assert response.json() == {'detail': 'Could not validate credentials'}
 
 
-def test_refresh_token(client, user, token):
-    response = client.post(
+def test_refresh_token(clientHttp, token):
+    response = clientHttp.post(
         '/auth/refresh_token',
         headers={'Authorization': f'Bearer {token}'},
     )
@@ -75,9 +75,9 @@ def test_refresh_token(client, user, token):
     assert data['token_type'] == 'bearer'
 
 
-def test_token_expired_dont_refresh(client, user):
+def test_token_expired_dont_refresh(clientHttp, user):
     with freeze_time('2023-07-14 12:00:00'):
-        response = client.post(
+        response = clientHttp.post(
             '/auth/token',
             data={'username': user.email, 'password': user.clean_password},
         )
@@ -85,7 +85,7 @@ def test_token_expired_dont_refresh(client, user):
         token = response.json()['access_token']
 
     with freeze_time('2023-07-14 12:31:00'):
-        response = client.post(
+        response = clientHttp.post(
             '/auth/refresh_token',
             headers={'Authorization': f'Bearer {token}'},
         )

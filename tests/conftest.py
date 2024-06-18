@@ -12,7 +12,7 @@ from fast_zero.security import get_password_hash
 
 
 @pytest.fixture()
-def client(session):
+def clientHttp(session):
     def get_session_override():
         return session
 
@@ -67,8 +67,8 @@ def user_other(session):
 
 
 @pytest.fixture()
-def token(client, user):
-    response = client.post(
+def token(clientHttp, user):
+    response = clientHttp.post(
         '/auth/token',
         data={'username': user.email, 'password': user.clean_password},
     )

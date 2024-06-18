@@ -29,3 +29,19 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
+
+
+class ClientSchema(BaseModel):
+    nome_completo: str
+    email: str
+    cpf: str
+
+
+class ClientPublic(BaseModel):
+    id: int
+    nome_completo: str
+    email: str
+
+
+class ClientList(BaseModel):
+    clients: list[ClientPublic]

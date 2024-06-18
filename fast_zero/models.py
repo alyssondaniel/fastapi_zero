@@ -17,3 +17,19 @@ class User:
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
+
+
+@table_registry.mapped_as_dataclass
+class Client:
+    __tablename__ = 'clients'
+
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    nome_completo: Mapped[str]
+    cpf: Mapped[str]
+    email: Mapped[str] = mapped_column(unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now(), onupdate=func.now()
+    )
