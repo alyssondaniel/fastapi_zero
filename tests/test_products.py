@@ -1,8 +1,7 @@
 from http import HTTPStatus
 
-import factory.fuzzy
-
-from fast_zero.models import Category, Product
+from fast_zero.factories import ProductFactory
+from fast_zero.models import Category
 
 
 def test_create_product(clientHttp, token):
@@ -29,19 +28,6 @@ def test_create_product(clientHttp, token):
         'estoque_inicial': 10,
         'data_validade': None,
     }
-
-
-class ProductFactory(factory.Factory):
-    class Meta:
-        model = Product
-
-    descricao = factory.Faker('text')
-    valor = factory.fuzzy.FuzzyDecimal(low=1)
-    codigo_barras = factory.Faker('text')
-    secao = factory.Faker('text')
-    estoque_inicial = factory.fuzzy.FuzzyInteger(low=1)
-    data_validade = None
-    categoria = factory.fuzzy.FuzzyChoice(Category)
 
 
 def test_list_products_should_return_5_products(session, clientHttp, token):

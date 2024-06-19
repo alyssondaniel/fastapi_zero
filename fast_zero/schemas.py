@@ -2,7 +2,7 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
-from fast_zero.models import Category
+from fast_zero.models import Category, OrderState
 
 
 class Message(BaseModel):
@@ -74,3 +74,19 @@ class ProductPublic(BaseModel):
 
 class ProductList(BaseModel):
     products: list[ProductPublic]
+
+
+class OrderSchema(BaseModel):
+    state: OrderState
+    client_id: int
+    product_ids: list[int]
+
+
+class OrderPublic(BaseModel):
+    id: int
+    client_id: int
+    state: OrderState
+
+
+class OrderList(BaseModel):
+    orders: list[OrderPublic]

@@ -1,10 +1,17 @@
 from datetime import date, datetime
 from enum import Enum
 
-from sqlalchemy import func
-from sqlalchemy.orm import Mapped, mapped_column, registry
+from sqlalchemy import ForeignKey, func
+from sqlalchemy.orm import (
+    Mapped,
+    declarative_base,
+    mapped_column,
+    registry,
+    relationship,
+)
 
 table_registry = registry()
+Base = declarative_base()
 
 
 class Category(str, Enum):
@@ -42,6 +49,15 @@ class Client:
     updated_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now(), onupdate=func.now()
     )
+    orders: Mapped[list['Order']] = relationship(
+        init=False, back_populates='client', cascade='all, delete-orphan'
+    )
+
+
+class OrderState(str, Enum):
+    waiting = 'aguardando'
+    paid = 'pago'
+    cancel = 'cancelado'
 
 
 @table_registry.mapped_as_dataclass
@@ -56,3 +72,41 @@ class Product:
     categoria: Mapped[Category]
     estoque_inicial: Mapped[int]
     data_validade: Mapped[date] = mapped_column(nullable=True)
+    orders: Mapped[list['Order']] = relationship(
+        init=False,
+        secondary='order_products',
+        back_populates='products',
+    )
+
+
+@table_registry.mapped_as_dataclass
+class Order:
+    __tablename__ = 'orders'
+
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    state: Mapped[OrderState]
+    client_id: Mapped[int] = mapped_column(ForeignKey('clients.id'))
+    client: Mapped[Client] = relationship(init=False, back_populates='orders')
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
+    products: Mapped[list['Product']] = relationship(
+        init=False,
+        secondary='order_products',
+        back_populates='orders',
+    )
+
+
+@table_registry.mapped_as_dataclass
+class OrderProduct:
+    __tablename__ = 'order_products'
+
+    order_id: Mapped[int] = mapped_column(
+        ForeignKey('orders.id'), primary_key=True
+    )
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey('products.id'), primary_key=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )

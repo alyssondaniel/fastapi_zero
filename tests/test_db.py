@@ -1,6 +1,6 @@
 from sqlalchemy import select
 
-from fast_zero.models import Client, Product, User
+from fast_zero.models import Client, Order, Product, User
 
 
 def test_create_user(session):
@@ -37,6 +37,7 @@ def test_create_product(session):
         secao='Vestuário',
         categoria='shoes',
         estoque_inicial=10,
+        data_validade=None,
     )
 
     session.add(product)
@@ -48,3 +49,18 @@ def test_create_product(session):
     )
 
     assert product is not None
+
+
+def test_create_order(session, client: Client, product: Product):
+    order = Order(state='aguardando', client_id=client.id)
+
+    order.products = [product]
+    session.add_all([order, product])
+    session.commit()
+    session.refresh(order)
+
+    client = session.scalar(select(Client).where(Client.id == client.id))
+    order = session.scalar(select(Order).where(Order.id == order.id))
+
+    assert order in client.orders
+    assert product in order.products

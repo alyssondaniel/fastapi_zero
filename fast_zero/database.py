@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 
 from fast_zero.settings import Settings
 
-engine = create_engine(Settings().DATABASE_URL)
+engine = create_engine(
+    Settings().DATABASE_URL,
+    # echo=True,
+)
 
 
 def get_session():
