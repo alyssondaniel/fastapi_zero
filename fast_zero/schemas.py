@@ -1,4 +1,8 @@
+from datetime import date
+
 from pydantic import BaseModel, ConfigDict, EmailStr
+
+from fast_zero.models import Category
 
 
 class Message(BaseModel):
@@ -45,3 +49,28 @@ class ClientPublic(BaseModel):
 
 class ClientList(BaseModel):
     clients: list[ClientPublic]
+
+
+class ProductSchema(BaseModel):
+    descricao: str
+    valor: float
+    codigo_barras: str
+    secao: str
+    categoria: Category
+    estoque_inicial: int
+    data_validade: date | None = None
+
+
+class ProductPublic(BaseModel):
+    id: int
+    descricao: str
+    valor: float
+    codigo_barras: str
+    secao: str
+    categoria: Category
+    estoque_inicial: int
+    data_validade: date | None = None
+
+
+class ProductList(BaseModel):
+    products: list[ProductPublic]

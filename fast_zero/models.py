@@ -1,9 +1,18 @@
-from datetime import datetime
+from datetime import date, datetime
+from enum import Enum
 
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column, registry
 
 table_registry = registry()
+
+
+class Category(str, Enum):
+    eletronics = 'Eletrônicos'
+    clothing = 'roupas'
+    shoes = 'calçados'
+    books = 'livros'
+    games = 'jogos'
 
 
 @table_registry.mapped_as_dataclass
@@ -33,3 +42,17 @@ class Client:
     updated_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now(), onupdate=func.now()
     )
+
+
+@table_registry.mapped_as_dataclass
+class Product:
+    __tablename__ = 'products'
+
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    descricao: Mapped[str]
+    valor: Mapped[float]
+    codigo_barras: Mapped[str]
+    secao: Mapped[str]
+    categoria: Mapped[Category]
+    estoque_inicial: Mapped[int]
+    data_validade: Mapped[date] = mapped_column(nullable=True)
