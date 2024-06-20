@@ -69,6 +69,19 @@ def list_products(  # noqa
     return {'products': products}
 
 
+@router.get('/{id}', response_model=ProductPublic)
+def show_product(  # noqa
+    id: int,
+    session: Session,
+    current_user: CurrentUser = None,
+):
+    product: Product = session.scalars(
+        select(Product).filter(Product.id == id)
+    ).first()
+
+    return product
+
+
 @router.patch('/{product_id}', response_model=ProductPublic)
 def patch_product(
     product_id: int,

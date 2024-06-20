@@ -83,6 +83,17 @@ def list_orders(  # noqa
     return {'orders': orders}
 
 
+@router.get('/{id}', response_model=OrderPublic)
+def list_order(  # noqa
+    id: int,
+    session: Session,
+    current_user: CurrentUser = None,
+):
+    order: Order = session.scalars(select(Order).filter(Order.id == id)).first()
+
+    return order
+
+
 @router.patch('/{order_id}', response_model=OrderPublic)
 def patch_order(
     order_id: int,

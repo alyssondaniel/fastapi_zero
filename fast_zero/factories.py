@@ -1,7 +1,6 @@
 import factory.fuzzy
 
 from fast_zero.models import (
-    Category,
     Client,
     Order,
     OrderProduct,
@@ -9,6 +8,7 @@ from fast_zero.models import (
     Product,
     User,
 )
+from fast_zero.states import CategoryState
 
 
 class ProductFactory(factory.Factory):
@@ -21,7 +21,7 @@ class ProductFactory(factory.Factory):
     secao = factory.Faker('text')
     estoque_inicial = factory.fuzzy.FuzzyInteger(low=1)
     data_validade = None
-    categoria = factory.fuzzy.FuzzyChoice(Category)
+    categoria = factory.fuzzy.FuzzyChoice(CategoryState)
 
 
 class OrderFactory(factory.Factory):
@@ -44,7 +44,7 @@ class ClientFactory(factory.Factory):
     class Meta:
         model = Client
 
-    nome_completo = factory.Faker('text')
+    nome_completo = factory.Faker('name')
     cpf = factory.Faker('text')
     email = factory.Faker('email')
 

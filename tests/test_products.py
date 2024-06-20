@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from fast_zero.factories import ProductFactory
-from fast_zero.models import Category
+from fast_zero.states import CategoryState
 
 
 def test_create_product(clientHttp, token):
@@ -80,7 +80,9 @@ def test_list_products_filter_categoria_should_return_5_products(
 ):
     expected_products = 5
     session.bulk_save_objects(
-        ProductFactory.create_batch(expected_products, categoria=Category.shoes)
+        ProductFactory.create_batch(
+            expected_products, categoria=CategoryState.shoes
+        )
     )
     session.commit()
 
@@ -124,6 +126,23 @@ def test_list_products_filter_disponibilidade_should_return_5_products(
     )
 
     assert len(response.json()['products']) > 0
+
+
+def test_show_client(clientHttp, product, token):
+    response = clientHttp.get(
+        f'/products/{product.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert response.json() == {
+        'id': 1,
+        'descricao': product.descricao,
+        'valor': product.valor,
+        'codigo_barras': product.codigo_barras,
+        'secao': product.secao,
+        'categoria': product.categoria,
+        'estoque_inicial': product.estoque_inicial,
+        'data_validade': product.data_validade,
+    }
 
 
 def test_patch_product_error(clientHttp, token):

@@ -66,7 +66,7 @@ def test_list_orders_filter_arrange_date_should_return_5_orders(
 
     date_end = date.today().strftime('%Y-%m-%d')
     response = clientHttp.get(
-        f'/orders/?date_start=2024-06-01&date_end={date_end}',
+        f'/orders/?create_at_start=2024-06-01&create_at_end={date_end}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -137,6 +137,19 @@ def test_list_orders_filter_client_should_return_5_orders(
     )
 
     assert len(response.json()['orders']) == expected_orders
+
+
+def test_show_order(clientHttp, token, order):
+    response = clientHttp.get(
+        f'/orders/{order.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.json() == {
+        'id': order.id,
+        'state': order.state,
+        'client_id': order.client_id,
+    }
 
 
 def test_patch_order_error(clientHttp, token, client, products):

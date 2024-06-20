@@ -5,9 +5,10 @@ import factory.fuzzy
 from fast_zero.models import Client
 
 
-def test_create_client(clientHttp):
+def test_create_client(clientHttp, token):
     response = clientHttp.post(
         '/clients/',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'nome_completo': 'Jhon Doe',
             'cpf': '00011122233',
@@ -117,25 +118,37 @@ def test_list_clients_filter_combined_should_return_5_clients(
         ClientFactory.create_batch(
             5,
             nome_completo='Jose Maria',
-            cpf='00011122233',
+            cpf='00011199933',
         )
     )
 
     session.bulk_save_objects(
         ClientFactory.create_batch(
             3,
-            nome_completo='Antonio Neto',
+            nome_completo='Antonio Jose',
             cpf='99988877766',
         )
     )
     session.commit()
 
     response = clientHttp.get(
-        '/clients/?nome_completo=Jose Maria&cpf=999',
+        '/clients/?nome_completo=Jose&cpf=999',
         headers={'Authorization': f'Bearer {token}'},
     )
 
     assert len(response.json()['clients']) == expected_clients
+
+
+def test_show_client(clientHttp, client, token):
+    response = clientHttp.get(
+        f'/clients/{client.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert response.json() == {
+        'id': client.id,
+        'nome_completo': client.nome_completo,
+        'email': client.email,
+    }
 
 
 def test_update_client_error(clientHttp, token):

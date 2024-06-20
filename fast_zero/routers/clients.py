@@ -37,31 +37,49 @@ def create_client(
 @router.get('/', response_model=ClientList)
 def list_clients(  # noqa
     session: Session,
-    title: str = Query(None),
-    description: str = Query(None),
-    state: str = Query(None),
+    nome_completo: str = Query(None),
+    cpf: str = Query(None),
+    email: str = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
     current_user: CurrentUser = None,
 ):
     query = select(Client)
 
-    if title:
-        query = query.filter(Client.title.contains(title))
+    if nome_completo:
+        query = query.filter(Client.nome_completo.contains(nome_completo))
 
-    if description:
-        query = query.filter(Client.description.contains(description))
+    if cpf:
+        query = query.filter(Client.cpf.contains(cpf))
 
-    if state:
-        query = query.filter(Client.state == state)
+    if email:
+        query = query.filter(Client.email == email)
 
     clients = session.scalars(query.offset(offset).limit(limit)).all()
 
     return {'clients': clients}
 
 
+@router.get('/{id}', response_model=ClientPublic)
+def show_client(  # noqa
+    id: int,
+    session: Session,
+    current_user: CurrentUser = None,
+):
+    client: Client = session.scalars(
+        select(Client).filter(Client.id == id)
+    ).first()
+
+    return client
+
+
 @router.put('/{client_id}', response_model=ClientPublic)
-def update_client(client_id: int, session: Session, client: ClientSchema):
+def update_client(
+    client_id: int,
+    session: Session,
+    client: ClientSchema,
+    current_user: CurrentUser = None,
+):
     db_client = session.scalar(select(Client).where(Client.id == client_id))
 
     if not db_client:
