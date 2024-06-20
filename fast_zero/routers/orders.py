@@ -8,7 +8,13 @@ from sqlalchemy.orm import Session
 
 from fast_zero.database import get_session
 from fast_zero.models import Order, OrderProduct, Product, User
-from fast_zero.schemas import Message, OrderList, OrderPublic, OrderSchema
+from fast_zero.schemas import (
+    Message,
+    OrderList,
+    OrderPublic,
+    OrderSchema,
+    OrderUpdate,
+)
 from fast_zero.security import get_current_user
 
 router = APIRouter()
@@ -105,7 +111,7 @@ def list_order(  # noqa
 def patch_order(
     order_id: int,
     session: Session,
-    order: OrderSchema,
+    order: OrderUpdate,
     current_user: CurrentUser = None,
 ):
     db_order = session.scalar(select(Order).where(Order.id == order_id))

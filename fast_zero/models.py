@@ -64,6 +64,9 @@ class Product:
         secondary='order_products',
         back_populates='products',
     )
+    product_images: Mapped[list['ProductImage']] = relationship(
+        init=False, back_populates='product', cascade='all, delete-orphan'
+    )
 
 
 @table_registry.mapped_as_dataclass
@@ -93,6 +96,22 @@ class OrderProduct:
     )
     product_id: Mapped[int] = mapped_column(
         ForeignKey('products.id'), primary_key=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
+
+
+@table_registry.mapped_as_dataclass
+class ProductImage:
+    __tablename__ = 'product_images'
+
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    file_name: Mapped[str]
+    file_type: Mapped[str]
+    product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
+    product: Mapped[Product] = relationship(
+        init=False, back_populates='product_images'
     )
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()

@@ -48,6 +48,12 @@ class ClientPublic(BaseModel):
     email: str
 
 
+class ClientUpdate(BaseModel):
+    nome_completo: str | None = None
+    email: str | None = None
+    cpf: str | None = None
+
+
 class ClientList(BaseModel):
     clients: list[ClientPublic]
 
@@ -59,6 +65,16 @@ class ProductSchema(BaseModel):
     secao: str
     categoria: CategoryState
     estoque_inicial: int
+    data_validade: date | None = None
+
+
+class ProductUpdate(BaseModel):
+    descricao: str | None = None
+    valor: float | None = None
+    codigo_barras: str | None = None
+    secao: str | None = None
+    categoria: CategoryState | None = None
+    estoque_inicial: int | None = None
     data_validade: date | None = None
 
 
@@ -83,6 +99,12 @@ class OrderSchema(BaseModel):
     product_ids: list[int]
 
 
+class OrderUpdate(BaseModel):
+    state: OrderState | None = None
+    client_id: int | None = None
+    product_ids: list[int] | None = None
+
+
 class OrderPublic(BaseModel):
     id: int
     client_id: int
@@ -91,3 +113,13 @@ class OrderPublic(BaseModel):
 
 class OrderList(BaseModel):
     orders: list[OrderPublic]
+
+
+class ProductImage(BaseModel):
+    id: int
+    file_name: str
+    file_type: str
+
+
+class ProductImageList(BaseModel):
+    product_images: list[ProductImage]

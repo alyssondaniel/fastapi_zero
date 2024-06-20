@@ -1,13 +1,22 @@
+import os
+import uuid
 from http import HTTPStatus
-from typing import Annotated
+from typing import Annotated, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy import String, cast, select
 from sqlalchemy.orm import Session
 
 from fast_zero.database import get_session
-from fast_zero.models import Product, User
-from fast_zero.schemas import Message, ProductList, ProductPublic, ProductSchema
+from fast_zero.models import Product, ProductImage, User
+from fast_zero.schemas import (
+    Message,
+    ProductImageList,
+    ProductList,
+    ProductPublic,
+    ProductSchema,
+    ProductUpdate,
+)
 from fast_zero.security import get_current_user
 
 router = APIRouter()
@@ -19,7 +28,7 @@ router = APIRouter(prefix='/products', tags=['products'])
 
 @router.post('/', response_model=ProductPublic)
 def create_product(
-    product: ProductSchema,
+    product: ProductUpdate,
     session: Session,
     current_user: CurrentUser = None,
 ):
@@ -80,6 +89,49 @@ def show_product(  # noqa
     ).first()
 
     return product
+
+
+@router.post('/{id}/images', response_model=ProductImageList)
+async def upload_images(  # noqa
+    id: int,
+    session: Session,
+    files: Annotated[
+        List[UploadFile],
+        File(description='Multiple images'),
+    ],
+    current_user: CurrentUser = None,
+):
+    list_db_image = []
+    if files:
+        oldImages = session.scalars(
+            select(ProductImage).where(ProductImage.product_id == id)
+        ).all()
+        for oldImage in oldImages:
+            session.delete(oldImage)
+            session.commit()
+            os.remove(f'{os.getcwd()}/product_images/{oldImage.file_name}')
+
+        for image in files:
+            try:
+                _, ext = image.content_type.split('/')
+                image.filename = f'{uuid.uuid4()}.{ext}'
+                file_path = f'{os.getcwd()}/product_images/{image.filename}'
+                with open(file_path, 'wb') as f:
+                    f.write(image.file.read())
+                    f.close()
+
+                db_image: ProductImage = ProductImage(
+                    product_id=id,
+                    file_name=image.filename,
+                    file_type=image.content_type,
+                )
+                session.add(db_image)
+                session.commit()
+                list_db_image.append(db_image)
+            except Exception as e:
+                print(str(e))
+
+    return {'product_images': list_db_image}
 
 
 @router.patch('/{product_id}', response_model=ProductPublic)

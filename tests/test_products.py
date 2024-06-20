@@ -1,3 +1,4 @@
+import os
 from http import HTTPStatus
 
 from fast_zero.factories import ProductFactory
@@ -28,6 +29,17 @@ def test_create_product(clientHttp, token):
         'estoque_inicial': 10,
         'data_validade': None,
     }
+
+
+def test_add_images(clientHttp, token, product):
+    file_path = f'{os.getcwd()}/product_images/image.png'
+    file = open(file_path, 'rb')
+    response = clientHttp.post(
+        f'/products/{product.id}/images',
+        headers={'Authorization': f'Bearer {token}'},
+        files={'files': file},
+    )
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_list_products_should_return_5_products(session, clientHttp, token):
