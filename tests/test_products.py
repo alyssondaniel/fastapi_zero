@@ -5,10 +5,10 @@ from fast_zero.factories import ProductFactory
 from fast_zero.states import CategoryState
 
 
-def test_create_product(clientHttp, token):
+def test_create_product(clientHttp, token_admin):
     response = clientHttp.post(
         '/products/',
-        headers={'Authorization': f'Bearer {token}'},
+        headers={'Authorization': f'Bearer {token_admin}'},
         json={
             'descricao': 'Tênis AllStar',
             'valor': 123.45,
@@ -31,12 +31,12 @@ def test_create_product(clientHttp, token):
     }
 
 
-def test_add_images(clientHttp, token, product):
+def test_add_images(clientHttp, token_admin, product):
     file_path = f'{os.getcwd()}/product_images/image.png'
     file = open(file_path, 'rb')
     response = clientHttp.post(
         f'/products/{product.id}/images',
-        headers={'Authorization': f'Bearer {token}'},
+        headers={'Authorization': f'Bearer {token_admin}'},
         files={'files': file},
     )
     assert response.status_code == HTTPStatus.OK
@@ -157,7 +157,7 @@ def test_show_client(clientHttp, product, token):
     }
 
 
-def test_patch_product_error(clientHttp, token):
+def test_patch_product_error(clientHttp, token_admin):
     response = clientHttp.patch(
         '/products/10',
         json={
@@ -168,13 +168,13 @@ def test_patch_product_error(clientHttp, token):
             'categoria': 'roupas',
             'estoque_inicial': 10,
         },
-        headers={'Authorization': f'Bearer {token}'},
+        headers={'Authorization': f'Bearer {token_admin}'},
     )
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Product not found.'}
 
 
-def test_patch_product(session, clientHttp, token):
+def test_patch_product(session, clientHttp, token_admin):
     product = ProductFactory()
 
     session.add(product)
@@ -190,20 +190,21 @@ def test_patch_product(session, clientHttp, token):
             'categoria': 'roupas',
             'estoque_inicial': 10,
         },
-        headers={'Authorization': f'Bearer {token}'},
+        headers={'Authorization': f'Bearer {token_admin}'},
     )
     assert response.status_code == HTTPStatus.OK
     assert response.json()['descricao'] == 'Teste1'
 
 
-def test_delete_product(session, clientHttp, token):
+def test_delete_product(session, clientHttp, token_admin):
     product = ProductFactory()
 
     session.add(product)
     session.commit()
 
     response = clientHttp.delete(
-        f'/products/{product.id}', headers={'Authorization': f'Bearer {token}'}
+        f'/products/{product.id}',
+        headers={'Authorization': f'Bearer {token_admin}'},
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -212,9 +213,9 @@ def test_delete_product(session, clientHttp, token):
     }
 
 
-def test_delete_product_error(clientHttp, token):
+def test_delete_product_error(clientHttp, token_admin):
     response = clientHttp.delete(
-        f'/products/{10}', headers={'Authorization': f'Bearer {token}'}
+        f'/products/{10}', headers={'Authorization': f'Bearer {token_admin}'}
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND

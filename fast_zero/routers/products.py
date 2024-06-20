@@ -17,7 +17,7 @@ from fast_zero.schemas import (
     ProductSchema,
     ProductUpdate,
 )
-from fast_zero.security import get_current_user
+from fast_zero.security import RoleChecker, get_current_user
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ router = APIRouter(prefix='/products', tags=['products'])
 def create_product(
     product: ProductUpdate,
     session: Session,
-    current_user: CurrentUser = None,
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=['admin']))],
 ):
     db_product: Product = Product(
         descricao=product.descricao,
@@ -99,7 +99,7 @@ async def upload_images(  # noqa
         List[UploadFile],
         File(description='Multiple images'),
     ],
-    current_user: CurrentUser = None,
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=['admin']))],
 ):
     list_db_image = []
     if files:
@@ -139,7 +139,7 @@ def patch_product(
     product_id: int,
     session: Session,
     product: ProductSchema,
-    current_user: CurrentUser = None,
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=['admin']))],
 ):
     db_product = session.scalar(select(Product).where(Product.id == product_id))
 
@@ -162,7 +162,7 @@ def patch_product(
 def delete_product(
     product_id: int,
     session: Session,
-    current_user: CurrentUser = None,
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=['admin']))],
 ):
     product = session.scalar(select(Product).where(Product.id == product_id))
 

@@ -15,7 +15,7 @@ from fast_zero.schemas import (
     OrderSchema,
     OrderUpdate,
 )
-from fast_zero.security import get_current_user
+from fast_zero.security import RoleChecker, get_current_user
 
 router = APIRouter()
 
@@ -29,7 +29,7 @@ router = APIRouter(prefix='/orders', tags=['orders'])
 def create_order(
     order: OrderSchema,
     session: Session,
-    current_user: CurrentUser = None,
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=['admin']))],
 ):
     products = session.scalars(
         select(Product).where(Product.id.in_(order.product_ids))
@@ -97,7 +97,7 @@ def list_orders(  # noqa
 
 
 @router.get('/{id}', response_model=OrderPublic)
-def list_order(  # noqa
+def show_order(  # noqa
     id: int,
     session: Session,
     current_user: CurrentUser = None,
@@ -112,7 +112,7 @@ def patch_order(
     order_id: int,
     session: Session,
     order: OrderUpdate,
-    current_user: CurrentUser = None,
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=['admin']))],
 ):
     db_order = session.scalar(select(Order).where(Order.id == order_id))
 
@@ -135,7 +135,7 @@ def patch_order(
 def delete_order(
     order_id: int,
     session: Session,
-    current_user: CurrentUser = None,
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=['admin']))],
 ):
     order = session.scalar(select(Order).where(Order.id == order_id))
 

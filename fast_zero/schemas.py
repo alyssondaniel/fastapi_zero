@@ -14,6 +14,7 @@ class UserSchema(BaseModel):
     username: str
     email: EmailStr
     password: str
+    role: str | None = None
 
 
 class UserPublic(BaseModel):
@@ -40,6 +41,7 @@ class ClientSchema(BaseModel):
     nome_completo: str
     email: str
     cpf: str
+    role: str | None = None
 
 
 class ClientPublic(BaseModel):
@@ -52,6 +54,7 @@ class ClientUpdate(BaseModel):
     nome_completo: str | None = None
     email: str | None = None
     cpf: str | None = None
+    role: str | None = None
 
 
 class ClientList(BaseModel):

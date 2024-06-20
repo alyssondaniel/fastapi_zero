@@ -63,6 +63,20 @@ def user(session):
 
 
 @pytest.fixture()
+def user_admin(session):
+    password = 'testtest'
+    user = UserFactory(password=get_password_hash(password), role='admin')
+
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    user.clean_password = password
+
+    return user
+
+
+@pytest.fixture()
 def client(session):
     client = ClientFactory()
 
@@ -127,5 +141,17 @@ def token(clientHttp, user):
     response = clientHttp.post(
         '/auth/token',
         data={'username': user.email, 'password': user.clean_password},
+    )
+    return response.json()['access_token']
+
+
+@pytest.fixture()
+def token_admin(clientHttp, user_admin):
+    response = clientHttp.post(
+        '/auth/token',
+        data={
+            'username': user_admin.email,
+            'password': user_admin.clean_password,
+        },
     )
     return response.json()['access_token']

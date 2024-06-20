@@ -4,7 +4,9 @@ from fast_zero.models import Client, Order, Product, User
 
 
 def test_create_user(session):
-    new_user = User(username='alice', password='secret', email='teste@test')
+    new_user = User(
+        username='alice', password='secret', email='teste@test', role=''
+    )
     session.add(new_user)
     session.commit()
 
@@ -13,7 +15,7 @@ def test_create_user(session):
     assert user is not None
 
 
-def test_create_client(session, user: User):
+def test_create_client(session):
     client = Client(
         nome_completo='Jhon Doe',
         cpf='00011122233',

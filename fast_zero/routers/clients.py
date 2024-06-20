@@ -14,7 +14,7 @@ from fast_zero.schemas import (
     ClientUpdate,
     Message,
 )
-from fast_zero.security import get_current_user
+from fast_zero.security import RoleChecker, get_current_user
 
 Session = Annotated[Session, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
@@ -26,7 +26,7 @@ router = APIRouter(prefix='/clients', tags=['clients'])
 def create_client(
     client: ClientSchema,
     session: Session,
-    current_user: CurrentUser = None,
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=['admin']))],
 ):
     db_client: Client = Client(
         nome_completo=client.nome_completo,
@@ -84,7 +84,7 @@ def update_client(
     client_id: int,
     session: Session,
     client: ClientUpdate,
-    current_user: CurrentUser = None,
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=['admin']))],
 ):
     db_client = session.scalar(select(Client).where(Client.id == client_id))
 
@@ -107,7 +107,7 @@ def update_client(
 def delete_client(
     client_id: int,
     session: Session,
-    current_user: CurrentUser = None,
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=['admin']))],
 ):
     client = session.scalar(select(Client).where(Client.id == client_id))
 

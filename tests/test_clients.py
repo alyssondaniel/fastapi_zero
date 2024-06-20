@@ -1,14 +1,12 @@
 from http import HTTPStatus
 
-import factory.fuzzy
-
-from fast_zero.models import Client
+from fast_zero.factories import ClientFactory
 
 
-def test_create_client(clientHttp, token):
+def test_create_client(clientHttp, token_admin):
     response = clientHttp.post(
         '/clients/',
-        headers={'Authorization': f'Bearer {token}'},
+        headers={'Authorization': f'Bearer {token_admin}'},
         json={
             'nome_completo': 'Jhon Doe',
             'cpf': '00011122233',
@@ -20,15 +18,6 @@ def test_create_client(clientHttp, token):
         'nome_completo': 'Jhon Doe',
         'email': 'jhondoe@example.com',
     }
-
-
-class ClientFactory(factory.Factory):
-    class Meta:
-        model = Client
-
-    nome_completo = factory.Faker('text')
-    cpf = factory.Faker('text')
-    email = factory.Faker('email')
 
 
 def test_list_clients_should_return_5_clients(session, clientHttp, token):
@@ -151,17 +140,17 @@ def test_show_client(clientHttp, client, token):
     }
 
 
-def test_update_client_error(clientHttp, token):
+def test_update_client_error(clientHttp, token_admin):
     response = clientHttp.put(
         '/clients/10',
         json={'nome_completo': '', 'cpf': '', 'email': ''},
-        headers={'Authorization': f'Bearer {token}'},
+        headers={'Authorization': f'Bearer {token_admin}'},
     )
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Client not found.'}
 
 
-def test_update_client(session, clientHttp, token):
+def test_update_client(session, clientHttp, token_admin):
     client = ClientFactory()
 
     session.add(client)
@@ -174,20 +163,21 @@ def test_update_client(session, clientHttp, token):
             'cpf': '12345678900',
             'email': 'jquimsilva@example.com',
         },
-        headers={'Authorization': f'Bearer {token}'},
+        headers={'Authorization': f'Bearer {token_admin}'},
     )
     assert response.status_code == HTTPStatus.OK
     assert response.json()['nome_completo'] == 'Joaquim da Silva'
 
 
-def test_delete_client(session, clientHttp, token):
+def test_delete_client(session, clientHttp, token_admin):
     client = ClientFactory()
 
     session.add(client)
     session.commit()
 
     response = clientHttp.delete(
-        f'/clients/{client.id}', headers={'Authorization': f'Bearer {token}'}
+        f'/clients/{client.id}',
+        headers={'Authorization': f'Bearer {token_admin}'},
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -196,9 +186,9 @@ def test_delete_client(session, clientHttp, token):
     }
 
 
-def test_delete_client_error(clientHttp, token):
+def test_delete_client_error(clientHttp, token_admin):
     response = clientHttp.delete(
-        f'/clients/{10}', headers={'Authorization': f'Bearer {token}'}
+        f'/clients/{10}', headers={'Authorization': f'Bearer {token_admin}'}
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND

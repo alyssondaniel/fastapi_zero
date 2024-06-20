@@ -26,6 +26,7 @@ class User:
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
+    role: Mapped[str] = mapped_column(server_default='guest')
 
 
 @table_registry.mapped_as_dataclass

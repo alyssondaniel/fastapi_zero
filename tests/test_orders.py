@@ -4,10 +4,10 @@ from http import HTTPStatus
 from fast_zero.factories import OrderFactory, OrderProductFactory
 
 
-def test_create_order(clientHttp, token, client, products):
+def test_create_order(clientHttp, token_admin, client, products):
     response = clientHttp.post(
         '/orders/',
-        headers={'Authorization': f'Bearer {token}'},
+        headers={'Authorization': f'Bearer {token_admin}'},
         json={
             'state': 'aguardando',
             'client_id': client.id,
@@ -154,7 +154,7 @@ def test_show_order(clientHttp, token, order):
     }
 
 
-def test_patch_order_error(clientHttp, token, client, products):
+def test_patch_order_error(clientHttp, token_admin, client, products):
     response = clientHttp.patch(
         '/orders/10',
         json={
@@ -162,13 +162,13 @@ def test_patch_order_error(clientHttp, token, client, products):
             'client_id': client.id,
             'product_ids': [product.id for product in products],
         },
-        headers={'Authorization': f'Bearer {token}'},
+        headers={'Authorization': f'Bearer {token_admin}'},
     )
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Order not found.'}
 
 
-def test_patch_order(session, clientHttp, client, token):
+def test_patch_order(session, clientHttp, client, token_admin):
     order = OrderFactory(client_id=client.id)
 
     session.add(order)
@@ -181,20 +181,21 @@ def test_patch_order(session, clientHttp, client, token):
             'client_id': client.id,
             'product_ids': [],
         },
-        headers={'Authorization': f'Bearer {token}'},
+        headers={'Authorization': f'Bearer {token_admin}'},
     )
     assert response.status_code == HTTPStatus.OK
     assert response.json()['state'] == 'pago'
 
 
-def test_delete_order(session, clientHttp, client, token):
+def test_delete_order(session, clientHttp, client, token_admin):
     order = OrderFactory(client_id=client.id)
 
     session.add(order)
     session.commit()
 
     response = clientHttp.delete(
-        f'/orders/{order.id}', headers={'Authorization': f'Bearer {token}'}
+        f'/orders/{order.id}',
+        headers={'Authorization': f'Bearer {token_admin}'},
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -203,9 +204,9 @@ def test_delete_order(session, clientHttp, client, token):
     }
 
 
-def test_delete_order_error(clientHttp, token):
+def test_delete_order_error(clientHttp, token_admin):
     response = clientHttp.delete(
-        '/orders/10', headers={'Authorization': f'Bearer {token}'}
+        '/orders/10', headers={'Authorization': f'Bearer {token_admin}'}
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
