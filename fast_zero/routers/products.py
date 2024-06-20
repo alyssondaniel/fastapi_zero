@@ -6,13 +6,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from fast_zero.database import get_session
-from fast_zero.models import Product
+from fast_zero.models import Product, User
 from fast_zero.schemas import Message, ProductList, ProductPublic, ProductSchema
+from fast_zero.security import get_current_user
 
 router = APIRouter()
 
 Session = Annotated[Session, Depends(get_session)]
-
+CurrentUser = Annotated[User, Depends(get_current_user)]
 router = APIRouter(prefix='/products', tags=['products'])
 
 
@@ -20,6 +21,7 @@ router = APIRouter(prefix='/products', tags=['products'])
 def create_product(
     product: ProductSchema,
     session: Session,
+    current_user: CurrentUser = None,
 ):
     db_product: Product = Product(
         descricao=product.descricao,
@@ -46,6 +48,7 @@ def list_products(  # noqa
     disponivel: bool = Query(False),
     offset: int = Query(None),
     limit: int = Query(None),
+    current_user: CurrentUser = None,
 ):
     query = select(Product)
 
@@ -67,7 +70,12 @@ def list_products(  # noqa
 
 
 @router.patch('/{product_id}', response_model=ProductPublic)
-def patch_product(product_id: int, session: Session, product: ProductSchema):
+def patch_product(
+    product_id: int,
+    session: Session,
+    product: ProductSchema,
+    current_user: CurrentUser = None,
+):
     db_product = session.scalar(select(Product).where(Product.id == product_id))
 
     if not db_product:
@@ -86,7 +94,11 @@ def patch_product(product_id: int, session: Session, product: ProductSchema):
 
 
 @router.delete('/{product_id}', response_model=Message)
-def delete_product(product_id: int, session: Session):
+def delete_product(
+    product_id: int,
+    session: Session,
+    current_user: CurrentUser = None,
+):
     product = session.scalar(select(Product).where(Product.id == product_id))
 
     if not product:

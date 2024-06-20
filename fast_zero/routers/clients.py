@@ -6,10 +6,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from fast_zero.database import get_session
-from fast_zero.models import Client
+from fast_zero.models import Client, User
 from fast_zero.schemas import ClientList, ClientPublic, ClientSchema, Message
+from fast_zero.security import get_current_user
 
 Session = Annotated[Session, Depends(get_session)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
 
 router = APIRouter(prefix='/clients', tags=['clients'])
 
@@ -18,6 +20,7 @@ router = APIRouter(prefix='/clients', tags=['clients'])
 def create_client(
     client: ClientSchema,
     session: Session,
+    current_user: CurrentUser = None,
 ):
     db_client: Client = Client(
         nome_completo=client.nome_completo,
@@ -39,6 +42,7 @@ def list_clients(  # noqa
     state: str = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
+    current_user: CurrentUser = None,
 ):
     query = select(Client)
 
@@ -76,7 +80,11 @@ def update_client(client_id: int, session: Session, client: ClientSchema):
 
 
 @router.delete('/{client_id}', response_model=Message)
-def delete_client(client_id: int, session: Session):
+def delete_client(
+    client_id: int,
+    session: Session,
+    current_user: CurrentUser = None,
+):
     client = session.scalar(select(Client).where(Client.id == client_id))
 
     if not client:

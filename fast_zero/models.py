@@ -1,5 +1,4 @@
 from datetime import date, datetime
-from enum import Enum
 
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import (
@@ -10,16 +9,10 @@ from sqlalchemy.orm import (
     relationship,
 )
 
+from fast_zero.states import CategoryState, OrderState
+
 table_registry = registry()
 Base = declarative_base()
-
-
-class Category(str, Enum):
-    eletronics = 'Eletrônicos'
-    clothing = 'roupas'
-    shoes = 'calçados'
-    books = 'livros'
-    games = 'jogos'
 
 
 @table_registry.mapped_as_dataclass
@@ -54,12 +47,6 @@ class Client:
     )
 
 
-class OrderState(str, Enum):
-    waiting = 'aguardando'
-    paid = 'pago'
-    cancel = 'cancelado'
-
-
 @table_registry.mapped_as_dataclass
 class Product:
     __tablename__ = 'products'
@@ -69,7 +56,7 @@ class Product:
     valor: Mapped[float]
     codigo_barras: Mapped[str]
     secao: Mapped[str]
-    categoria: Mapped[Category]
+    categoria: Mapped[CategoryState]
     estoque_inicial: Mapped[int]
     data_validade: Mapped[date] = mapped_column(nullable=True)
     orders: Mapped[list['Order']] = relationship(

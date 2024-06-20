@@ -6,12 +6,14 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from fast_zero.database import get_session
-from fast_zero.models import Order, OrderProduct, Product
+from fast_zero.models import Order, OrderProduct, Product, User
 from fast_zero.schemas import Message, OrderList, OrderPublic, OrderSchema
+from fast_zero.security import get_current_user
 
 router = APIRouter()
 
 Session = Annotated[Session, Depends(get_session)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
 
 router = APIRouter(prefix='/orders', tags=['orders'])
 
@@ -20,6 +22,7 @@ router = APIRouter(prefix='/orders', tags=['orders'])
 def create_order(
     order: OrderSchema,
     session: Session,
+    current_user: CurrentUser = None,
 ):
     products = session.scalars(
         select(Product).where(Product.id.in_(order.product_ids))
@@ -49,6 +52,7 @@ def list_orders(  # noqa
     client_id: int = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
+    current_user: CurrentUser = None,
 ):
     query = select(Order)
 
@@ -80,7 +84,12 @@ def list_orders(  # noqa
 
 
 @router.patch('/{order_id}', response_model=OrderPublic)
-def patch_order(order_id: int, session: Session, order: OrderSchema):
+def patch_order(
+    order_id: int,
+    session: Session,
+    order: OrderSchema,
+    current_user: CurrentUser = None,
+):
     db_order = session.scalar(select(Order).where(Order.id == order_id))
 
     if not db_order:
@@ -99,7 +108,11 @@ def patch_order(order_id: int, session: Session, order: OrderSchema):
 
 
 @router.delete('/{order_id}', response_model=Message)
-def delete_order(order_id: int, session: Session):
+def delete_order(
+    order_id: int,
+    session: Session,
+    current_user: CurrentUser = None,
+):
     order = session.scalar(select(Order).where(Order.id == order_id))
 
     if not order:

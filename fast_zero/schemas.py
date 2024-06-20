@@ -2,7 +2,8 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
-from fast_zero.models import Category, OrderState
+from fast_zero.models import OrderState
+from fast_zero.states import CategoryState
 
 
 class Message(BaseModel):
@@ -56,7 +57,7 @@ class ProductSchema(BaseModel):
     valor: float
     codigo_barras: str
     secao: str
-    categoria: Category
+    categoria: CategoryState
     estoque_inicial: int
     data_validade: date | None = None
 
@@ -67,7 +68,7 @@ class ProductPublic(BaseModel):
     valor: float
     codigo_barras: str
     secao: str
-    categoria: Category
+    categoria: CategoryState
     estoque_inicial: int
     data_validade: date | None = None
 
