@@ -66,7 +66,7 @@ def test_list_orders_filter_arrange_date_should_return_5_orders(
 
     date_end = date.today().strftime('%Y-%m-%d')
     response = clientHttp.get(
-        f'/orders/?create_at_start=2024-06-01&create_at_end={date_end}',
+        f'/orders/?created_start=2024-06-01&created_end={date_end}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -74,7 +74,7 @@ def test_list_orders_filter_arrange_date_should_return_5_orders(
 
 
 def test_list_orders_filter_product_secao_should_return_1_orders(
-    session, clientHttp, token, order, product
+    session, clientHttp, token, product, order
 ):
     expected_orders = 1
     session.bulk_save_objects(
@@ -106,11 +106,13 @@ def test_list_orders_filter_order_id_should_return_1_orders(
 
 
 def test_list_orders_filter_status_should_return_5_orders(
-    session, clientHttp, token
+    session, clientHttp, token, client
 ):
     expected_orders = 5
     session.bulk_save_objects(
-        OrderFactory.create_batch(expected_orders, state='pago')
+        OrderFactory.create_batch(
+            expected_orders, state='pago', client_id=client.id
+        )
     )
     session.commit()
 

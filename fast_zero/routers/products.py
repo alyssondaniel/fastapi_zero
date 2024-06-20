@@ -2,7 +2,7 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import String, cast, select
 from sqlalchemy.orm import Session
 
 from fast_zero.database import get_session
@@ -59,7 +59,7 @@ def list_products(  # noqa
         query = query.filter(Product.categoria == categoria)
 
     if valor:
-        query = query.filter(Product.valor == valor)
+        query = query.filter(cast(Product.valor, String) == (f'{valor}'))
 
     if descricao:
         query = query.filter(Product.descricao.contains(descricao))

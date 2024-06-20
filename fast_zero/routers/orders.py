@@ -1,3 +1,4 @@
+from datetime import datetime
 from http import HTTPStatus
 from typing import Annotated
 
@@ -44,8 +45,8 @@ def create_order(
 @router.get('/', response_model=OrderList)
 def list_orders(  # noqa
     session: Session,
-    create_at_start: str = Query(None),
-    create_at_end: str = Query(None),
+    created_start: str = Query(None),
+    created_end: str = Query(None),
     product_secao: str = Query(None),
     order_id: int = Query(None),
     state: str = Query(None),
@@ -56,10 +57,16 @@ def list_orders(  # noqa
 ):
     query = select(Order)
 
-    if create_at_start and create_at_end:
+    if created_start and created_end:
+        created_start_format = datetime.strptime(
+            f'{created_start} 00:00:00', '%Y-%m-%d %H:%M:%S'
+        )
+        created_end_format = datetime.strptime(
+            f'{created_end} 23:59:59', '%Y-%m-%d %H:%M:%S'
+        )
         query = query.filter(
-            and_(func.date(Order.created_at) >= create_at_start),
-            func.date(Order.created_at) <= create_at_end,
+            and_(func.date(Order.created_at) >= created_start_format),
+            func.date(Order.created_at) <= created_end_format,
         )
 
     if product_secao:

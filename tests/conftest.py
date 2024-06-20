@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from sqlalchemy.pool import StaticPool
+from testcontainers.postgres import PostgresContainer
 
 from fast_zero.app import app
 from fast_zero.database import get_session
@@ -29,19 +29,23 @@ def clientHttp(session):
 
 
 @pytest.fixture()
-def session():
-    engine = create_engine(
-        'sqlite:///:memory:',
-        connect_args={'check_same_thread': False},
-        poolclass=StaticPool,
-        # echo=True,
-    )
+def session(engine):
     table_registry.metadata.create_all(engine)
 
     with Session(engine) as session:
         yield session
+        session.rollback()
 
     table_registry.metadata.drop_all(engine)
+
+
+@pytest.fixture(scope='session')
+def engine():
+    with PostgresContainer('postgres:16', driver='psycopg') as postgres:
+        _engine = create_engine(postgres.get_connection_url())
+
+        with _engine.begin():
+            yield _engine
 
 
 @pytest.fixture()
@@ -74,7 +78,6 @@ def products(session):
     products = ProductFactory.create_batch(3)
     session.add_all(products)
     session.commit()
-    # session.refresh(products)
 
     return products
 
@@ -92,7 +95,11 @@ def product(session):
 
 @pytest.fixture()
 def order(session):
-    order = OrderFactory()
+    clientFactory = ClientFactory.create()
+    session.add(clientFactory)
+    session.commit()
+    session.refresh(clientFactory)
+    order = OrderFactory(client_id=clientFactory.id)
 
     session.add(order)
     session.commit()
